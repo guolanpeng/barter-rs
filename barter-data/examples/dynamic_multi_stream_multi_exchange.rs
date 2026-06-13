@@ -30,8 +30,8 @@ async fn main() {
     // - If the "subscription batch" contains more-than-one ExchangeId and/or SubKind, the batch
     //   will be further split under the hood for compile-time reasons.
 
-    // Initialise market reconnect::Event streams for various ExchangeIds and SubscriptionKinds
-    let streams = DynamicStreams::init([
+
+    let instruments: [Vec<(ExchangeId, &str, &str, MarketDataInstrumentKind, SubKind)>; 3] = [
         // Batch notes:
         // Since batch contains 1 ExchangeId and 1 SubscriptionKind, so only 1 (1x1) WebSockets
         // will be spawned for this batch.
@@ -61,7 +61,10 @@ async fn main() {
             (Okx, "eth", "usdt", Perpetual, PublicTrades),
             (Bitmex, "eth", "usdt", Perpetual, PublicTrades),
         ],
-    ]).await.unwrap();
+    ];
+
+    // Initialise market reconnect::Event streams for various ExchangeIds and SubscriptionKinds
+    let streams = DynamicStreams::init(instruments).await.unwrap();
 
     // Select all streams, mapping each SubscriptionKind `MarketStreamResult<T>` into a unified
     // `Output` (eg/ `MarketStreamResult<_, DataKind>`), where MarketStreamResult<T>: Into<Output>

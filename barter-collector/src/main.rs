@@ -1,16 +1,23 @@
-use barter_collector::default_public_trade_receiver;
-use futures_util::StreamExt;
-use tracing::info;
+use barter_collector::collector::{collector::BarterCollector, config::BarterCollectorConfig};
+use barter_data::subscription::SubKind::OrderBooksL2;
+use barter_instrument::{
+    exchange::ExchangeId::BinanceFuturesUsd,
+    instrument::market_data::kind::MarketDataInstrumentKind::Perpetual,
+};
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> anyhow::Result<()> {
     init_logging();
 
-    let mut receiver = default_public_trade_receiver().await?;
+    let instruments = vec![
+        // (BinanceFuturesUsd, "btc", "usdt", Perpetual, PublicTrades),
+        (BinanceFuturesUsd, "btc", "usdt", Perpetual, OrderBooksL2),
+        // (BinanceFuturesUsd, "btc", "usdt", Perpetual, Liquidations),
+    ];
 
-    while let Some(event) = receiver.next().await {
-        info!(?event, "received market event");
-    }
+    let config = BarterCollectorConfig { instruments };
+    let mut collector = BarterCollector::new(config);
+    collector.run().await?;
 
     Ok(())
 }
