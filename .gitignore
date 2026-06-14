@@ -8,3 +8,4 @@ Cargo.lock
 # IDE
 .idea/
 *.iml
+deploy.sh
