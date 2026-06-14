@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    env:
+      RUST_TOOLCHAIN: 1.85.1
 
     steps:
       - uses: actions/checkout@v5
@@ -19,7 +21,7 @@ jobs:
           sudo apt-get install -y build-essential cmake pkg-config libssl-dev libcurl4-openssl-dev zlib1g-dev
 
       - name: Install Rust
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.85.1
 
       - name: Cache Rust
         uses: Swatinem/rust-cache@v2
@@ -27,7 +29,13 @@ jobs:
           workspaces: ". -> target"
 
       - name: Build collector
-        run: cargo build --release -p barter-collector
+        run: cargo +${{ env.RUST_TOOLCHAIN }} build --release -p barter-collector
+
+      - name: Show GLIBC requirements
+        run: |
+          file target/release/barter-collector
+          ldd target/release/barter-collector
+          strings target/release/barter-collector | grep 'GLIBC_' | sort -Vu | tail -20
 
       - name: Upload binary
         uses: actions/upload-artifact@v4
