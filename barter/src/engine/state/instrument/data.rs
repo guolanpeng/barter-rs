@@ -12,7 +12,7 @@ use barter_execution::{
 };
 use barter_instrument::{asset::AssetIndex, exchange::ExchangeIndex, instrument::InstrumentIndex};
 use derive_more::Constructor;
-use rust_decimal::{Decimal, prelude::FromPrimitive};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 
@@ -87,10 +87,9 @@ impl<InstrumentKey> Processor<&MarketEvent<InstrumentKey, DataKind>>
                     .last_traded_price
                     .as_ref()
                     .is_none_or(|price| price.time < event.time_exchange)
-                    && let Some(price) = Decimal::from_f64(trade.price)
                 {
                     self.last_traded_price
-                        .replace(Timed::new(price, event.time_exchange));
+                        .replace(Timed::new(trade.price, event.time_exchange));
                 }
             }
             DataKind::OrderBookL1(l1) => {

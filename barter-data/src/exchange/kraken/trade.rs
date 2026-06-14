@@ -10,6 +10,7 @@ use barter_integration::{
     subscription::SubscriptionId,
 };
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::Serialize;
 
 /// Terse type alias for an [`Kraken`](super::Kraken) real-time trades WebSocket message.
@@ -33,9 +34,10 @@ pub struct KrakenTradesInner {
 /// See docs: <https://docs.kraken.com/websockets/#message-trade>
 #[derive(Copy, Clone, PartialEq, PartialOrd, Debug, Serialize)]
 pub struct KrakenTrade {
-    pub price: f64,
-    #[serde(rename = "quantity")]
-    pub amount: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub price: Decimal,
+    #[serde(rename = "quantity", with = "rust_decimal::serde::str")]
+    pub amount: Decimal,
     pub time: DateTime<Utc>,
     pub side: Side,
 }
@@ -165,13 +167,13 @@ impl<'de> serde::de::Deserialize<'de> for KrakenTrade {
                 // [price, volume, time, side, orderType, misc]
                 // <https://docs.kraken.com/websockets/#message-trade>
 
-                // Extract String price & parse to f64
-                let price = extract_next::<SeqAccessor, String>(&mut seq, "price")?
+                // Extract String price & parse to Decimal
+                let price: Decimal = extract_next::<SeqAccessor, String>(&mut seq, "price")?
                     .parse()
                     .map_err(serde::de::Error::custom)?;
 
-                // Extract String amount & parse to f64
-                let amount = extract_next::<SeqAccessor, String>(&mut seq, "quantity")?
+                // Extract String amount & parse to Decimal
+                let amount: Decimal = extract_next::<SeqAccessor, String>(&mut seq, "quantity")?
                     .parse()
                     .map_err(serde::de::Error::custom)?;
 
@@ -215,6 +217,7 @@ mod tests {
             error::SocketError, serde::de::datetime_utc_from_epoch_duration,
             subscription::SubscriptionId,
         };
+        use rust_decimal_macros::dec;
 
         #[test]
         fn test_kraken_message_trades() {
@@ -254,16 +257,16 @@ mod tests {
                     subscription_id: SubscriptionId::from("trade|XBT/USD"),
                     trades: vec![
                         KrakenTrade {
-                            price: 5541.2,
-                            amount: 0.15850568,
+                            price: dec!(5541.20000),
+                            amount: dec!(0.15850568),
                             time: datetime_utc_from_epoch_duration(
                                 std::time::Duration::from_secs_f64(1534614057.321597),
                             ),
                             side: Side::Sell,
                         },
                         KrakenTrade {
-                            price: 6060.0,
-                            amount: 0.02455000,
+                            price: dec!(6060.00000),
+                            amount: dec!(0.02455000),
                             time: datetime_utc_from_epoch_duration(
                                 std::time::Duration::from_secs_f64(1534614057.324998),
                             ),

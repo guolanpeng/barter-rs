@@ -8,6 +8,7 @@ use crate::{
 use barter_instrument::{Side, exchange::ExchangeId};
 use barter_integration::subscription::SubscriptionId;
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 /// Terse type alias for a `GateioFuturesUsdt`, `GateioFuturesBtc`, `GateioPerpetualUsdt` and
@@ -53,10 +54,10 @@ pub struct GateioFuturesTradeInner {
     )]
     pub time: DateTime<Utc>,
     pub id: u64,
-    #[serde(deserialize_with = "barter_integration::serde::de::de_str")]
-    pub price: f64,
-    #[serde(rename = "size")]
-    pub amount: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub price: Decimal,
+    #[serde(rename = "size", with = "rust_decimal::serde::float")]
+    pub amount: Decimal,
 }
 
 impl Identifier<Option<SubscriptionId>> for GateioFuturesTrades {
@@ -86,7 +87,7 @@ impl<InstrumentKey: Clone> From<(ExchangeId, InstrumentKey, GateioFuturesTrades)
                         id: trade.id.to_string(),
                         price: trade.price,
                         amount: trade.amount,
-                        side: if trade.amount.is_sign_positive() {
+                        side: if trade.amount >= Decimal::ZERO {
                             Side::Buy
                         } else {
                             Side::Sell

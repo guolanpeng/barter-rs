@@ -5,6 +5,7 @@ use crate::{
 use barter_instrument::{Side, exchange::ExchangeId};
 use barter_integration::serde::de::{datetime_utc_from_epoch_duration, extract_next};
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::Serialize;
 
 /// [`Bitfinex`](super::Bitfinex) real-time trade message.
@@ -38,8 +39,10 @@ pub struct BitfinexTrade {
     pub id: u64,
     pub time: DateTime<Utc>,
     pub side: Side,
-    pub price: f64,
-    pub amount: f64,
+    #[serde(with = "rust_decimal::serde::float")]
+    pub price: Decimal,
+    #[serde(with = "rust_decimal::serde::float")]
+    pub amount: Decimal,
 }
 
 impl<InstrumentKey> From<(ExchangeId, InstrumentKey, BitfinexTrade)>
@@ -85,11 +88,16 @@ impl<'de> serde::Deserialize<'de> for BitfinexTrade {
                 // Trade: [ID, TIME, AMOUNT,PRICE]
                 let id = extract_next(&mut seq, "id")?;
                 let time_millis = extract_next(&mut seq, "time")?;
-                let amount: f64 = extract_next(&mut seq, "amount")?;
+                let amount: Decimal = extract_next(&mut seq, "amount")?;
                 let price = extract_next(&mut seq, "price")?;
-                let side = match amount.is_sign_positive() {
+                let side = match amount >= Decimal::ZERO {
                     true => Side::Buy,
                     false => Side::Sell,
+                };
+                let amount = if amount < Decimal::ZERO {
+                    -amount
+                } else {
+                    amount
                 };
 
                 // Ignore any additional elements or SerDe will fail
@@ -102,7 +110,7 @@ impl<'de> serde::Deserialize<'de> for BitfinexTrade {
                         time_millis,
                     )),
                     price,
-                    amount: amount.abs(),
+                    amount,
                     side,
                 })
             }

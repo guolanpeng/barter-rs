@@ -7,6 +7,7 @@ use crate::{
 use barter_instrument::{Side, exchange::ExchangeId};
 use barter_integration::subscription::SubscriptionId;
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 /// Terse type alias for an [`Okx`](super::Okx) real-time trades WebSocket message.
@@ -80,16 +81,10 @@ impl<T> Identifier<Option<SubscriptionId>> for OkxMessage<T> {
 pub struct OkxTrade {
     #[serde(rename = "tradeId")]
     pub id: String,
-    #[serde(
-        rename = "px",
-        deserialize_with = "barter_integration::serde::de::de_str"
-    )]
-    pub price: f64,
-    #[serde(
-        rename = "sz",
-        deserialize_with = "barter_integration::serde::de::de_str"
-    )]
-    pub amount: f64,
+    #[serde(rename = "px", with = "rust_decimal::serde::str")]
+    pub price: Decimal,
+    #[serde(rename = "sz", with = "rust_decimal::serde::str")]
+    pub amount: Decimal,
     pub side: Side,
     #[serde(
         rename = "ts",
@@ -148,6 +143,7 @@ mod tests {
     mod de {
         use super::*;
         use barter_integration::{error::SocketError, serde::de::datetime_utc_from_epoch_duration};
+        use rust_decimal_macros::dec;
         use std::time::Duration;
 
         #[test]
@@ -176,8 +172,8 @@ mod tests {
                 subscription_id: SubscriptionId::from("trades|BTC-USDT"),
                 data: vec![OkxTrade {
                     id: "130639474".to_string(),
-                    price: 42219.9,
-                    amount: 0.12060306,
+                    price: dec!(42219.9),
+                    amount: dec!(0.12060306),
                     side: Side::Buy,
                     time: datetime_utc_from_epoch_duration(Duration::from_millis(1630048897897)),
                 }],

@@ -8,6 +8,7 @@ use crate::{
 use barter_instrument::{Side, exchange::ExchangeId};
 use barter_integration::subscription::SubscriptionId;
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 /// Coinbase real-time trade WebSocket message.
@@ -36,13 +37,10 @@ pub struct CoinbaseTrade {
     #[serde(alias = "trade_id")]
     pub id: u64,
     pub time: DateTime<Utc>,
-    #[serde(
-        alias = "size",
-        deserialize_with = "barter_integration::serde::de::de_str"
-    )]
-    pub amount: f64,
-    #[serde(deserialize_with = "barter_integration::serde::de::de_str")]
-    pub price: f64,
+    #[serde(alias = "size", with = "rust_decimal::serde::str")]
+    pub amount: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub price: Decimal,
     pub side: Side,
 }
 
@@ -86,6 +84,7 @@ mod tests {
     use super::*;
     use barter_integration::error::SocketError;
     use chrono::NaiveDateTime;
+    use rust_decimal_macros::dec;
     use serde::de::Error;
     use std::str::FromStr;
 
@@ -118,8 +117,8 @@ mod tests {
                 expected: Ok(CoinbaseTrade {
                     subscription_id: SubscriptionId::from("matches|BTC-USD"),
                     id: 10,
-                    price: 400.23,
-                    amount: 5.23512,
+                    price: dec!(400.23),
+                    amount: dec!(5.23512),
                     side: Side::Sell,
                     time: NaiveDateTime::from_str("2014-11-07T08:19:27.028459")
                         .unwrap()

@@ -70,7 +70,7 @@ use barter_integration::{
 };
 use chrono::{DateTime, Utc};
 use fnv::FnvHashMap;
-use rust_decimal::Decimal;
+use rust_decimal::{Decimal, prelude::FromPrimitive};
 use rust_decimal_macros::dec;
 
 const STARTING_TIMESTAMP: DateTime<Utc> = DateTime::<Utc>::MIN_UTC;
@@ -886,8 +886,8 @@ fn market_event_trade(time_plus: u64, instrument: usize, price: f64) -> EngineEv
         instrument: InstrumentIndex(instrument),
         kind: DataKind::Trade(PublicTrade {
             id: time_plus.to_string(),
-            price,
-            amount: 1.0,
+            price: Decimal::from_f64(price).unwrap(),
+            amount: Decimal::from_f64(1.0).unwrap(),
             side: Side::Buy,
         }),
     }))

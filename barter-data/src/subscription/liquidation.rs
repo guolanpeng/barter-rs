@@ -1,6 +1,7 @@
 use super::SubscriptionKind;
 use barter_instrument::Side;
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 /// Barter [`Subscription`](super::Subscription) [`SubscriptionKind`] that yields [`Liquidation`]
@@ -28,7 +29,9 @@ impl std::fmt::Display for Liquidations {
 #[derive(Clone, Copy, PartialEq, PartialOrd, Debug, Deserialize, Serialize)]
 pub struct Liquidation {
     pub side: Side,
-    pub price: f64,
-    pub quantity: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub price: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub quantity: Decimal,
     pub time: DateTime<Utc>,
 }

@@ -1,6 +1,7 @@
 use super::SubscriptionKind;
 use barter_instrument::Side;
 use barter_macro::{DeSubKind, SerSubKind};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 /// Barter [`Subscription`](super::Subscription) [`SubscriptionKind`] that yields [`PublicTrade`]
@@ -28,7 +29,9 @@ impl std::fmt::Display for PublicTrades {
 #[derive(Clone, PartialEq, PartialOrd, Debug, Deserialize, Serialize)]
 pub struct PublicTrade {
     pub id: String,
-    pub price: f64,
-    pub amount: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub price: Decimal,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub amount: Decimal,
     pub side: Side,
 }

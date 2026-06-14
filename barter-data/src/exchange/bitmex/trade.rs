@@ -5,6 +5,7 @@ use crate::{
 };
 use barter_instrument::{Side, exchange::ExchangeId};
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 /// Terse type alias for an [`BitmexTrade`](BitmexTradeInner) real-time trades WebSocket message.
@@ -39,9 +40,10 @@ pub struct BitmexTradeInner {
     pub timestamp: DateTime<Utc>,
     pub symbol: String,
     pub side: Side,
-    #[serde(rename = "size")]
-    pub amount: f64,
-    pub price: f64,
+    #[serde(rename = "size", with = "rust_decimal::serde::float")]
+    pub amount: Decimal,
+    #[serde(with = "rust_decimal::serde::float")]
+    pub price: Decimal,
 
     #[serde(rename = "trdMatchID")]
     pub id: String,
@@ -82,6 +84,7 @@ mod tests {
         use super::*;
         use barter_integration::error::SocketError;
         use chrono::{Duration, TimeZone};
+        use rust_decimal_macros::dec;
 
         #[test]
         fn test_bitmex_trade() {
@@ -113,8 +116,8 @@ mod tests {
                             + Duration::milliseconds(701),
                         symbol: "XBTUSD".to_string(),
                         side: Side::Sell,
-                        amount: 200.0,
-                        price: 24564.5,
+                        amount: dec!(200.0),
+                        price: dec!(24564.5),
                         id: "31e50cb7-e005-a44e-f354-86e88dff52eb".to_string(),
                     }),
                 },
@@ -177,8 +180,8 @@ mod tests {
                                 + Duration::milliseconds(701),
                             symbol: "XBTUSD".to_string(),
                             side: Side::Sell,
-                            amount: 200.0,
-                            price: 24564.5,
+                            amount: dec!(200.0),
+                            price: dec!(24564.5),
                             id: "31e50cb7-e005-a44e-f354-86e88dff52eb".to_string(),
                         }],
                     }),

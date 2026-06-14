@@ -8,6 +8,7 @@ use crate::{
 use barter_instrument::{Side, exchange::ExchangeId};
 use barter_integration::subscription::SubscriptionId;
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 /// Terse type alias for an [`GateioSpot`](super::GateioSpot) real-time trades WebSocket message.
@@ -38,14 +39,11 @@ pub struct GateioSpotTradeInner {
     )]
     pub time: DateTime<Utc>,
     pub id: u64,
-    #[serde(deserialize_with = "barter_integration::serde::de::de_str")]
-    pub price: f64,
+    #[serde(with = "rust_decimal::serde::str")]
+    pub price: Decimal,
 
-    #[serde(
-        alias = "size",
-        deserialize_with = "barter_integration::serde::de::de_str"
-    )]
-    pub amount: f64,
+    #[serde(alias = "size", with = "rust_decimal::serde::str")]
+    pub amount: Decimal,
 
     /// Taker [`Side`] of the trade.
     pub side: Side,

@@ -382,13 +382,14 @@ pub mod test_utils {
     };
     use barter_instrument::{Side, exchange::ExchangeId};
     use chrono::{DateTime, Utc};
+    use rust_decimal::Decimal;
 
     pub fn market_event_trade_buy<InstrumentKey>(
         time_exchange: DateTime<Utc>,
         time_received: DateTime<Utc>,
         instrument: InstrumentKey,
-        price: f64,
-        quantity: f64,
+        price: Decimal,
+        quantity: Decimal,
     ) -> MarketEvent<InstrumentKey, DataKind> {
         MarketEvent {
             time_exchange,

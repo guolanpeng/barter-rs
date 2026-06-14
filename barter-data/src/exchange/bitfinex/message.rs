@@ -134,6 +134,7 @@ mod tests {
     use super::*;
     use barter_instrument::Side;
     use barter_integration::{error::SocketError, serde::de::datetime_utc_from_epoch_duration};
+    use rust_decimal_macros::dec;
     use std::time::Duration;
 
     #[test]
@@ -159,8 +160,8 @@ mod tests {
                             1665452200022,
                         )),
                         side: Side::Sell,
-                        price: 19027.02807752,
-                        amount: 0.08980641,
+                        price: dec!(19027.02807752),
+                        amount: dec!(0.08980641),
                     }),
                 }),
             },
@@ -175,8 +176,8 @@ mod tests {
                             1665452200022,
                         )),
                         side: Side::Buy,
-                        price: 19027.02807752,
-                        amount: 0.08980641,
+                        price: dec!(19027.02807752),
+                        amount: dec!(0.08980641),
                     }),
                 }),
             },

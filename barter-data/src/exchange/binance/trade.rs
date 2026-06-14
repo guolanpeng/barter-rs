@@ -8,6 +8,7 @@ use crate::{
 use barter_instrument::{Side, exchange::ExchangeId};
 use barter_integration::subscription::SubscriptionId;
 use chrono::{DateTime, Utc};
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 
 /// Binance real-time trade message.
@@ -62,16 +63,10 @@ pub struct BinanceTrade {
     pub time: DateTime<Utc>,
     #[serde(alias = "t")]
     pub id: u64,
-    #[serde(
-        alias = "p",
-        deserialize_with = "barter_integration::serde::de::de_str"
-    )]
-    pub price: f64,
-    #[serde(
-        alias = "q",
-        deserialize_with = "barter_integration::serde::de::de_str"
-    )]
-    pub amount: f64,
+    #[serde(alias = "p", with = "rust_decimal::serde::str")]
+    pub price: Decimal,
+    #[serde(alias = "q", with = "rust_decimal::serde::str")]
+    pub amount: Decimal,
     #[serde(alias = "m", deserialize_with = "de_side_from_buyer_is_maker")]
     pub side: Side,
 }
@@ -138,6 +133,7 @@ mod tests {
 
         use super::*;
         use barter_integration::{error::SocketError, serde::de::datetime_utc_from_epoch_duration};
+        use rust_decimal_macros::dec;
         use serde::de::Error;
 
         #[test]
@@ -163,8 +159,8 @@ mod tests {
                             1749354825200,
                         )),
                         id: 1000000000,
-                        price: 10000.19,
-                        amount: 0.239000,
+                        price: dec!(10000.19),
+                        amount: dec!(0.239000),
                         side: Side::Buy,
                     }),
                 },
@@ -194,8 +190,8 @@ mod tests {
                             1749354825200,
                         )),
                         id: 1000000000,
-                        price: 10000.19,
-                        amount: 0.239000,
+                        price: dec!(10000.19),
+                        amount: dec!(0.239000),
                         side: Side::Sell,
                     }),
                 },
@@ -213,8 +209,8 @@ mod tests {
                             1749354825200,
                         )),
                         id: 1000000000,
-                        price: 10000.19,
-                        amount: 0.239000,
+                        price: dec!(10000.19),
+                        amount: dec!(0.239000),
                         side: Side::Buy,
                     }),
                 },
@@ -230,8 +226,8 @@ mod tests {
                             1749354825200,
                         )),
                         id: 1000000000,
-                        price: 10000.19,
-                        amount: 0.239000,
+                        price: dec!(10000.19),
+                        amount: dec!(0.239000),
                         side: Side::Buy,
                     }),
                 },
