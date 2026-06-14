@@ -103,8 +103,7 @@ impl Publisher {
     pub async fn publish_market_event(&self, event: &CollectorMarketEvent) -> anyhow::Result<()> {
         let topic = self.config.topics.topic_for_kind(&event.kind);
         let key = market_event_key(event);
-        let payload = serde_json::to_string(&MarketEventPayload::try_from(event)?)
-            .context("failed to serialise market event")?;
+        let payload = serde_json::to_string(&event).context("failed to serialise market event")?;
 
         let delivery = self
             .producer
@@ -118,35 +117,6 @@ impl Publisher {
 
         info!(topic, key, ?delivery, "published market event to Redpanda");
         Ok(())
-    }
-}
-
-#[derive(Serialize)]
-struct MarketEventPayload<'a> {
-    time_exchange: i64,
-    time_received: i64,
-    exchange: &'static str,
-    instrument: &'a MarketDataInstrument,
-    kind: &'a DataKind,
-}
-
-impl<'a> TryFrom<&'a CollectorMarketEvent> for MarketEventPayload<'a> {
-    type Error = anyhow::Error;
-
-    fn try_from(event: &'a CollectorMarketEvent) -> Result<Self, Self::Error> {
-        Ok(Self {
-            time_exchange: event
-                .time_exchange
-                .timestamp_nanos_opt()
-                .context("time_exchange is out of nanosecond timestamp range")?,
-            time_received: event
-                .time_received
-                .timestamp_nanos_opt()
-                .context("time_received is out of nanosecond timestamp range")?,
-            exchange: event.exchange.as_str(),
-            instrument: &event.instrument,
-            kind: &event.kind,
-        })
     }
 }
 
