@@ -1,0 +1,33 @@
+name: Build Collector
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake pkg-config libssl-dev
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ". -> target"
+
+      - name: Build collector
+        run: cargo build --release -p barter-collector
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: barter-collector-linux-x86_64
+          path: target/release/barter-collector
