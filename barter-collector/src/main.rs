@@ -4,7 +4,7 @@ const DEFAULT_CONFIG_PATH: &str = "barter-collector/config/collector.json";
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    dotenvy::dotenv()?;
+    dotenvy::dotenv().ok();
     init_logging();
 
     let config_path =

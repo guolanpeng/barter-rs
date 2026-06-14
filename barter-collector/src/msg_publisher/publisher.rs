@@ -2,10 +2,8 @@ use std::time::Duration;
 
 use anyhow::Context;
 use barter_data::event::DataKind;
-use barter_instrument::instrument::market_data::MarketDataInstrument;
 use rdkafka::config::ClientConfig;
 use rdkafka::producer::{FutureProducer, FutureRecord};
-use serde::Serialize;
 use tracing::info;
 
 use crate::data::CollectorMarketEvent;
