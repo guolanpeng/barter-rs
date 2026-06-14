@@ -1,21 +1,15 @@
 use barter_collector::collector::{collector::BarterCollector, config::BarterCollectorConfig};
-use barter_data::subscription::SubKind::OrderBooksL2;
-use barter_instrument::{
-    exchange::ExchangeId::BinanceFuturesUsd,
-    instrument::market_data::kind::MarketDataInstrumentKind::Perpetual,
-};
+
+const DEFAULT_CONFIG_PATH: &str = "barter-collector/config/collector.json";
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     init_logging();
 
-    let instruments = vec![
-        // (BinanceFuturesUsd, "btc", "usdt", Perpetual, PublicTrades),
-        (BinanceFuturesUsd, "btc", "usdt", Perpetual, OrderBooksL2),
-        // (BinanceFuturesUsd, "btc", "usdt", Perpetual, Liquidations),
-    ];
+    let config_path =
+        std::env::var("BARTER_COLLECTOR_CONFIG").unwrap_or_else(|_| DEFAULT_CONFIG_PATH.to_owned());
+    let config = BarterCollectorConfig::load_from_path(config_path)?;
 
-    let config = BarterCollectorConfig { instruments };
     let mut collector = BarterCollector::new(config);
     collector.run().await?;
 

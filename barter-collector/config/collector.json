@@ -1,0 +1,11 @@
+{
+  "instruments": [
+    {
+      "exchange": "binance_futures_usd",
+      "base": "btc",
+      "quote": "usdt",
+      "instrument_kind": "perpetual",
+      "subscription_kind": "order_books_l2"
+    }
+  ]
+}
