@@ -9,9 +9,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-24.04
-    env:
-      RUST_TOOLCHAIN: 1.85.1
-
     steps:
       - uses: actions/checkout@v5
 
