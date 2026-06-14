@@ -26,7 +26,7 @@ jobs:
           workspaces: ". -> target"
 
       - name: Build collector
-        run: cargo +${{ env.RUST_TOOLCHAIN }} build --release -p barter-collector
+        run: cargo  build --release -p barter-collector
 
       - name: Show GLIBC requirements
         run: |
