@@ -2,6 +2,9 @@ name: Build Collector
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - market-data-collector
 
 jobs:
   build:
