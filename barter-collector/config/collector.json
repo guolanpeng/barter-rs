@@ -5,7 +5,7 @@
       "base": "btc",
       "quote": "usdt",
       "instrument_kind": "perpetual",
-      "subscription_kind": "order_books_l2"
+      "subscription_kind": "public_trades"
     }
   ]
 }

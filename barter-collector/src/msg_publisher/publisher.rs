@@ -1,11 +1,14 @@
 use std::time::Duration;
 
 use anyhow::Context;
-use barter_data::event::{DataKind, MarketEvent};
+use barter_data::event::DataKind;
 use barter_instrument::instrument::market_data::MarketDataInstrument;
 use rdkafka::config::ClientConfig;
 use rdkafka::producer::{FutureProducer, FutureRecord};
+use serde::Serialize;
 use tracing::info;
+
+use crate::data::CollectorMarketEvent;
 
 const DEFAULT_BROKERS: &str = "127.0.0.1:9092";
 const DEFAULT_MESSAGE_TIMEOUT_MS: &str = "5000";
@@ -97,13 +100,11 @@ impl Publisher {
         Ok(Self { producer, config })
     }
 
-    pub async fn publish_market_event(
-        &self,
-        event: &MarketEvent<MarketDataInstrument, DataKind>,
-    ) -> anyhow::Result<()> {
+    pub async fn publish_market_event(&self, event: &CollectorMarketEvent) -> anyhow::Result<()> {
         let topic = self.config.topics.topic_for_kind(&event.kind);
         let key = market_event_key(event);
-        let payload = serde_json::to_string(event).context("failed to serialise market event")?;
+        let payload = serde_json::to_string(&MarketEventPayload::try_from(event)?)
+            .context("failed to serialise market event")?;
 
         let delivery = self
             .producer
@@ -120,7 +121,36 @@ impl Publisher {
     }
 }
 
-fn market_event_key(event: &MarketEvent<MarketDataInstrument, DataKind>) -> String {
+#[derive(Serialize)]
+struct MarketEventPayload<'a> {
+    time_exchange: i64,
+    time_received: i64,
+    exchange: &'static str,
+    instrument: &'a MarketDataInstrument,
+    kind: &'a DataKind,
+}
+
+impl<'a> TryFrom<&'a CollectorMarketEvent> for MarketEventPayload<'a> {
+    type Error = anyhow::Error;
+
+    fn try_from(event: &'a CollectorMarketEvent) -> Result<Self, Self::Error> {
+        Ok(Self {
+            time_exchange: event
+                .time_exchange
+                .timestamp_nanos_opt()
+                .context("time_exchange is out of nanosecond timestamp range")?,
+            time_received: event
+                .time_received
+                .timestamp_nanos_opt()
+                .context("time_received is out of nanosecond timestamp range")?,
+            exchange: event.exchange.as_str(),
+            instrument: &event.instrument,
+            kind: &event.kind,
+        })
+    }
+}
+
+fn market_event_key(event: &CollectorMarketEvent) -> String {
     let exchange = event.exchange.as_str().replace('_', "-");
 
     format!(

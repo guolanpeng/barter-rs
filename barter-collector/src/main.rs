@@ -4,13 +4,14 @@ const DEFAULT_CONFIG_PATH: &str = "barter-collector/config/collector.json";
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    dotenvy::dotenv()?;
     init_logging();
 
     let config_path =
         std::env::var("BARTER_COLLECTOR_CONFIG").unwrap_or_else(|_| DEFAULT_CONFIG_PATH.to_owned());
     let config = BarterCollectorConfig::load_from_path(config_path)?;
 
-    let mut collector = BarterCollector::new(config);
+    let mut collector = BarterCollector::new(config)?;
     collector.run().await?;
 
     Ok(())

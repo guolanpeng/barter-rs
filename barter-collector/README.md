@@ -60,21 +60,27 @@ binance-futures-usd:btcusdt:liquidations
 
 ```json
 {
-  "exchange": "binance-futures-usd",
-  "symbol": "btcusdt",
-  "kind": "trades",
-  "event_time": "2026-06-14T12:00:00Z",
-  "data": {}
+  "time_exchange": 1781438400000000000,
+  "time_received": 1781438400123456789,
+  "exchange": "binance_futures_usd",
+  "instrument": {
+    "base": "btc",
+    "quote": "usdt",
+    "instrument_kind": "perpetual"
+  },
+  "kind": {
+    "trade": {}
+  }
 }
 ```
 
 字段建议：
 
-- `exchange`：交易所或市场，例如 `binance-futures-usd`。
-- `symbol`：交易对，例如 `btcusdt`。
-- `kind`：数据类型，应与 Topic 语义一致，例如 `trades`、`book_ticker`。
-- `event_time`：交易所事件时间。
-- `data`：原始或标准化后的行情主体。
+- `time_exchange`：交易所事件时间，Unix epoch 纳秒整数，无时区字符串。
+- `time_received`：本地接收时间，Unix epoch 纳秒整数，无时区字符串。
+- `exchange`：交易所或市场，例如 `binance_futures_usd`。
+- `instrument`：交易对和合约类型。
+- `kind`：原始或标准化后的行情主体。
 
 后续如果吞吐量变大，可以再从 JSON 切换到 Protobuf、Avro 或 MessagePack。
 
@@ -92,6 +98,8 @@ Producer 配置位于 `src/msg_publisher/publisher.rs`，默认从环境变量�
 let brokers = std::env::var("REDPANDA_BROKERS")
     .unwrap_or_else(|_| "127.0.0.1:9092".to_owned());
 ```
+
+启动时会通过 `dotenvy::dotenv()` 自动从当前目录向父目录查找 `.env`。该文件只用于本地配置，不提交到仓库；可以复制仓库根目录的 `.env.example` 为 `.env` 后按需修改。系统环境变量优先于 `.env` 中的同名变量。
 
 可配置项：
 

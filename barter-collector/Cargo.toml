@@ -8,9 +8,15 @@ anyhow = "1.0.102"
 barter-data = { workspace = true }
 barter-instrument = { workspace = true }
 futures-util = { workspace = true }
+dotenvy = "0.15.7"
 rdkafka = { version = "0.39.0", features = ["cmake-build"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json = { workspace = true }
 tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
 tracing = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter", "json"] }
+derive_more = { workspace = true, features = [
+    "constructor",
+    "display",
+    "from",
+] }
